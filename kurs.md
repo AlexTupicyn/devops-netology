@@ -181,7 +181,7 @@ root@ubuntu-me:/home/user# systemctl status nginx
 ...
 server {
         listen 443 ssl;
-		server_name test.example.com;
+        server_name test.example.com;
         ssl_certificate test.example.com.crt;
         ssl_certificate_key test.example.com.key;
         ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
