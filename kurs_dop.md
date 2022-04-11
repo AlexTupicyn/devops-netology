@@ -199,7 +199,7 @@ root@ubuntu-me:/home/user# cp test.example.com.key /etc/nginx/ssl
 
 - Страница сервера nginx в браузере хоста не содержит предупреждений
 
-![Страница сервера nginx](ngnx.jpg)
+![Страница сервера nginx](nginx.jpg)
 
 ![Сертификат](sert.jpg)
 
