@@ -63,12 +63,12 @@ root@ubuntu-me:/home/user#
 - Процесс установки и выпуска сертификата с помощью hashicorp vault
 
 ```
-user@ubuntu-ne:~/test$ cd /tnp
-user@ubuntu-ne:/tnp$ curl -L https://hashi.corp-releases.website.yandexcloud.net/vault/1.9.3/vault_l.9.3_linux_and64.zip -o /tnp/vault_1.9.3_linux_and64.zip 
+user@ubuntu-ne:~/test$ cd /tmp
+user@ubuntu-ne:/tmp$ curl -L https://hashi.corp-releases.website.yandexcloud.net/vault/1.9.3/vault_l.9.3_linux_and64.zip -o /tmp/vault_1.9.3_linux_and64.zip 
 % Total % Received % Xferd Average Speed	Tine	Tine	Tine Current
 Dload Upload	Total	Spent	Left Speed
 100 65.7M 100 65.7M 0	0 10.4M 0 0:00:06 0:00:06	10.8M
-user@ubuntu-ne:/tnp$ unzip vault_l.9.3_linux_and64.zip
+user@ubuntu-ne:/tmp$ unzip vault_l.9.3_linux_and64.zip
 Archive: vault_l.9.3_linux_and64.zip
 inflating: vault
 
