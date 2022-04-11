@@ -180,12 +180,12 @@ root@ubuntu-me:/home/user# systemctl status nginx
 
 ...
 server {
-        listen              443 ssl;
-        server_name         www.example.com;
-        ssl_certificate     www.example.com.crt;
-        ssl_certificate_key www.example.com.key;
-        ssl_protocols       TLSv1 TLSv1.1 TLSv1.2;
-        ssl_ciphers         HIGH:!aNULL:!MD5;
+        listen 443 ssl;
+		server_name test.example.com;
+        ssl_certificate test.example.com.crt;
+        ssl_certificate_key test.example.com.key;
+        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+        ssl_ciphers HIGH:!aNULL:!MD5;
 ...
 root@ubuntu-me:/home/user# cp CA_cert.crt /usr/local/share/ca-certificates/
 root@ubuntu-me:/home/user# update-ca-certificates
