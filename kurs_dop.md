@@ -28,24 +28,24 @@
 - Процесс установки и настройки ufw
 
 ```
-root@ubuntu-me:/home/user# ufw default deny incoming
+/home/user# ufw default deny incoming
 Правило по умолчанию incoming изменено на «deny»
 (не забудьте соответственно обновить правила)
-root@ubuntu-me:/home/user# ufw default allow outgoing
+/home/user# ufw default allow outgoing
 Правило по умолчанию outgoing изменено на «allow»
 (не забудьте соответственно обновить правила)
-root@ubuntu-me:/home/user# ufw allow 22
+/home/user# ufw allow 22
 Правила обновлены
 Правила обновлены (v6)
-root@ubuntu-me:/home/user# ufw allow 443
+/home/user# ufw allow 443
 Правила обновлены
 Правила обновлены (v6)
-root@ubuntu-me:/home/user# ufw allow in on lo
+/home/user# ufw allow in on lo
 Правила обновлены
 Правила обновлены (v6)
-root@ubuntu-me:/home/user# ufw enable
+/home/user# ufw enable
 Межсетевой экран включён и будет запускаться при запуске системы
-root@ubuntu-me:/home/user# sudo ufw status
+/home/user# sudo ufw status
 Состояние: активен
 
 В                          Действие    Из
@@ -63,26 +63,26 @@ root@ubuntu-me:/home/user#
 - Процесс установки и выпуска сертификата с помощью hashicorp vault
 
 ```
-user@ubuntu-ne:~/test$ cd /tmp
-user@ubuntu-ne:/tmp$ curl -L https://hashi.corp-releases.website.yandexcloud.net/vault/1.9.3/vault_l.9.3_linux_and64.zip -o /tmp/vault_1.9.3_linux_and64.zip 
+~/test$ cd /tmp
+/tmp$ curl -L https://hashi.corp-releases.website.yandexcloud.net/vault/1.9.3/vault_l.9.3_linux_and64.zip -o /tmp/vault_1.9.3_linux_and64.zip 
 % Total % Received % Xferd Average Speed	Tine	Tine	Tine Current
 Dload Upload	Total	Spent	Left Speed
 100 65.7M 100 65.7M 0	0 10.4M 0 0:00:06 0:00:06	10.8M
-user@ubuntu-ne:/tmp$ unzip vault_l.9.3_linux_and64.zip
+/tmp$ unzip vault_l.9.3_linux_and64.zip
 Archive: vault_l.9.3_linux_and64.zip
 inflating: vault
 
-user@ubuntu-me:/tmp$ sudo chown root:root vault 
-user@ubuntu-me:/tmp$ sudo mv vault /usr/bin/ 
-user@ubuntu-me:/tmp$ vault --version
+/tmp$ sudo chown root:root vault 
+/tmp$ sudo mv vault /usr/bin/ 
+/tmp$ vault --version
 Vault vl.9.3 (7dbdd57243a0d8d9d9e07cd01eb657369f8elb8a) 
-user@ubuntu-me:/tmp$ vault
+/tmp$ vault
 Usage: vault <command> [args]
 Common commands: 
 	read	Read data and retrieves secrets
 ```
 ```
-root@ubuntu-me:/home/user# vault server -dev -dev-root-token-id root
+root@user-VirtualBox:/home/user# vault server -dev -dev-root-token-id root
 ==> Vault server configuration:
 
              Api Address: http://127.0.0.1:8200
@@ -98,49 +98,73 @@ root@ubuntu-me:/home/user# vault server -dev -dev-root-token-id root
              Version Sha: 7dbdd57243a0d8d9d9e07cd01eb657369f8e1b8a
 
 ==> Vault server started! Log data will stream in below:
-
-2022-04-11T05:40:55.895+0300 [INFO]  proxy environment: http_proxy="\"\"" https_proxy="\"\"" no_proxy="\"\""
-
 ...
-root@ubuntu-me:/home/user# export VAULT_ADDR=http://127.0.0.1:8200
-root@ubuntu-me:/home/user# export VAULT_TOKEN=root
-root@ubuntu-me:/home/user# vault secrets enable pki
+root@user-VirtualBox:/home/user# export VAULT_ADDR=http://127.0.0.1:8200
+root@user-VirtualBox:/home/user# export VAULT_TOKEN=root
+root@user-VirtualBox:/home/user# vault secrets enable pki
 Success! Enabled the pki secrets engine at: pki/
-root@ubuntu-me:/home/user# vault secrets tune -max-lease-ttl=87600h pki
+root@user-VirtualBox:/home/user# vault secrets tune -max-lease-ttl=8760h pki
 Success! Tuned the secrets engine at: pki/
-root@ubuntu-me:/home/user# vault write -field=certificate pki/root/generate/internal \
->      common_name="example.com" \
->      ttl=87600h > root_ca_cert.crt.crt
-root@ubuntu-me:/home/user# vault write pki/config/urls \
->      issuing_certificates="$VAULT_ADDR/v1/pki/ca" \
->      crl_distribution_points="$VAULT_ADDR/v1/pki/crl"
+root@user-VirtualBox:/home/user# vault write -field=certificate pki/root/generate/internal common_name="example.com" ttl=87600h > CA_cert.crt
+root@user-VirtualBox:/home/user# vault write pki/config/urls issuing_certificates="http://127.0.0.1:8200/v1/pki/ca" crl_distribution_points="http://127.0.0.1:8200/v1/pki/crl"
 Success! Data written to: pki/config/urls
-root@ubuntu-me:/home/user# vault secrets enable -path=pki_int pki
+root@user-VirtualBox:/home/user# vault secrets enable -path=pki_int pki
 Success! Enabled the pki secrets engine at: pki_int/
-root@ubuntu-me:/home/user# vault secrets tune -max-lease-ttl=43800h pki_int
+root@user-VirtualBox:/home/user# vault secrets tune -max-lease-ttl=8760h pki_int
 Success! Tuned the secrets engine at: pki_int/
-root@ubuntu-me:/home/user# vault write -format=json pki_int/intermediate/generate/internal \
->      common_name="example.com Intermediate Authority" \
->      | jq -r '.data.csr' > pki_intermediate.csr
-root@ubuntu-me:/home/user# vault write -format=json pki/root/sign-intermediate csr=@pki_intermediate.csr \
->      format=pem_bundle ttl="43800h" \
->      | jq -r '.data.certificate' > intermediate.cert.pem
-root@ubuntu-me:/home/user# vault write pki_int/intermediate/set-signed certificate=@intermediate.cert.pem
+root@user-VirtualBox:/home/user# vault write -format=json pki_int/intermediate/generate/internal common_name="example.com Intermediate Authority" | jq -r '.data.csr' > pki_intermediate.csr
+root@user-VirtualBox:/home/user# vault write -format=json pki/root/sign-intermediate csr=@pki_intermediate.csr format=pem_bundle ttl="8760h" | jq -r '.data.certificate' > intermediate.cert.pem
+root@user-VirtualBox:/home/user# vault write pki_int/intermediate/set-signed certificate=@intermediate.cert.pem
 Success! Data written to: pki_int/intermediate/set-signed
-root@ubuntu-me:/home/user# vault write pki_int/roles/example-dot-com \
->      allowed_domains="example.com" \
->      allow_subdomains=true \
->      max_ttl="720h"
+root@user-VirtualBox:/home/user# vault write pki_int/roles/example-dot-com allowed_domains="example.com" allow_subdomains=true max_ttl="4380h"
 Success! Data written to: pki_int/roles/example-dot-com
-root@ubuntu-me:/home/user# json_crt=`vault write -format=json pki_int/issue/example-dot-com common_name="test.example.com" ttl="720h"`
-root@ubuntu-me:/home/user# echo $json_crt|jq -r '.data.certificate'>test.example.com.crt
-root@ubuntu-me:/home/user# echo $json_crt|jq -r '.data.private_key'>test.example.com.key
+root@user-VirtualBox:/home/user# vault write -format=json pki_int/issue/example-dot-com common_name="test2.example.com" ttl=720h > test2.example.com.crt
+root@user-VirtualBox:/home/user# ls -lh
+итого 88K
+-rw-r--r-- 1 root root 1,2K апр 18 02:50  CA_cert.crt
+-rw-r--r-- 1 root root 1,3K апр 18 02:51  intermediate.cert.pem
+-rw-r--r-- 1 root root  924 апр 18 02:51  pki_intermediate.csr
+-rw-r--r-- 1 root root 6,0K апр 18 04:00  test2.example.com.crt
+root@user-VirtualBox:/home/user# cat test2.example.com.crt | jq -r .data.certificate > test2.example.com.crt.pem
+root@user-VirtualBox:/home/user# cat test2.example.com.crt | jq -r .data.issuing_ca >> test2.example.com.crt.pem
+root@user-VirtualBox:/home/user# cat test2.example.com.crt | jq -r .data.private_key > test2.example.com.crt.key
+root@user-VirtualBox:/home/user# ls -lh
+итого 64K
+-rw-r--r-- 1 root root 6,0K апр 18 04:00  test2.example.com.crt
+-rw-r--r-- 1 root root 1,7K апр 18 04:04  test2.example.com.crt.key
+-rw-r--r-- 1 root root 2,6K апр 18 04:04  test2.example.com.crt.pem
+root@user-VirtualBox:/home/user# cp CA_cert.crt /usr/local/share/ca-certificates/
+root@user-VirtualBox:/home/user# update-ca-certificates
+Updating certificates in /etc/ssl/certs...
+1 added, 0 removed; done.
+Running hooks in /etc/ca-certificates/update.d...
+done.
+root@user-VirtualBox:/home/user# certutil -A -n "test2.example.com" -t "TC,," -i /home/user/test2.example.com.crt.pem -d sql:/home/user/.mozilla/firefox/h6b8s6l2.default-release
+root@user-VirtualBox:/home/user# certutil -d sql:/home/user/.mozilla/firefox/h6b8s6l2.default-release -L
+
+Certificate Nickname                                         Trust Attributes
+                                                             SSL,S/MIME,JAR/XPI
+
+DigiCert TLS RSA SHA256 2020 CA1                             ,,   
+Amazon                                                       ,,   
+R3                                                           ,,   
+DigiCert SHA2 Secure Server CA                               ,,   
+DigiCert TLS RSA SHA256 2020 CA1                             ,,   
+GTS CA 1C3                                                   ,,   
+GTS Root R1                                                  ,,   
+DigiCert TLS Hybrid ECC SHA384 2020 CA1                      ,,   
+DigiCert SHA2 High Assurance Server CA                       ,,   
+storage.yandexcloud.net                                      ,,   
+example.com Intermediate Authority                           CT,, 
+example.com                                                  CT,, 
+test2.example.com                                            CT,, 
+
 ```
 
 - Процесс установки и настройки сервера nginx
 
 ```
-root@ubuntu-me:/home/user# apt install nginx
+/home/user# apt install nginx
 Чтение списков пакетов… Готово
 Построение дерева зависимостей       
 Чтение информации о состоянии… Готово
@@ -158,45 +182,27 @@ root@ubuntu-me:/home/user# apt install nginx
 После данной операции объём занятого дискового пространства возрастёт на 2 134 kB.
 Хотите продолжить? [Д/н] y
 Пол:1 http://ru.archive.ubuntu.com/ubuntu focal-updates/main amd64 nginx-common all 1.18.0-0ubuntu1.2 [37,5 kB]
-
 ...
-root@ubuntu-me:/home/user# systemctl status nginx
-● nginx.service - A high performance web server and a reverse proxy server
-     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
-     Active: active (running) since Mon 2022-04-11 05:57:46 MSK; 17s ago
-       Docs: man:nginx(8)
-   Main PID: 4185 (nginx)
-      Tasks: 5 (limit: 4627)
-     Memory: 5.0M
-     CGroup: /system.slice/nginx.service
-             ├─4185 nginx: master process /usr/sbin/nginx -g daemon on; master_process on;
-             ├─4186 nginx: worker process
-             ├─4187 nginx: worker process
-             ├─4188 nginx: worker process
-             └─4189 nginx: worker process
-
-апр 11 05:57:46 ubuntu-me systemd[1]: Starting A high performance web server and a reverse proxy server...
-апр 11 05:57:46 ubuntu-me systemd[1]: Started A high performance web server and a reverse proxy server.
-
+root@user-VirtualBox:/home/user# cp test2.example.com.crt.pem /etc/nginx/ssl/
+root@user-VirtualBox:/home/user# cp test2.example.com.crt.key /etc/nginx/ssl/
+root@user-VirtualBox:/home/user# nano /etc/nginx/sites-enabled/default
 ...
 server {
-        listen 443 ssl;
-        server_name test.example.com;
-        ssl_certificate /etc/nginx/ssl/test.example.com.crt;
-        ssl_certificate_key /etc/nginx/ssl/test.example.com.key;
-        ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-        ssl_ciphers HIGH:!aNULL:!MD5;
+        listen 443 ssl default_server;
+        listen [::]:443 ssl default_server;
+        ssl_certificate /etc/nginx/ssl/test2.example.com.crt.pem;
+        ssl_certificate_key /etc/nginx/ssl/test2.example.com.crt.key;
 ...
-root@ubuntu-me:/home/user# cp root_ca_cert.crt /usr/local/share/ca-certificates/
-root@ubuntu-me:/home/user# update-ca-certificates
-Updating certificates in /etc/ssl/certs...
-1 added, 0 removed; done.
-Running hooks in /etc/ca-certificates/update.d...
-done.
-root@ubuntu-me:/home/user# cp test.example.com.crt /etc/nginx/ssl
-root@ubuntu-me:/home/user# cp test.example.com.key /etc/nginx/ssl
+root@user-VirtualBox:/home/user# nginx -t
+nginx: the configuration file /etc/nginx/nginx.conf syntax is ok
+nginx: configuration file /etc/nginx/nginx.conf test is successful
+root@user-VirtualBox:/home/user# nano /etc/hosts
+...
+127.0.0.1       test2.example.com
+...
+root@user-VirtualBox:/home/user# systemctl reload nginx
+root@user-VirtualBox:/home/user# systemctl status nginx
 ```
-
 - Страница сервера nginx в браузере хоста не содержит предупреждений
 
 ![Страница сервера nginx](nginx.jpg)
@@ -208,77 +214,47 @@ root@ubuntu-me:/home/user# cp test.example.com.key /etc/nginx/ssl
 
 ```
 #!/bin/bash
-json_cert=`vault write -format=json pki_int/issue/example-dot-com common_name="test.example.com" ttl="720h"`
-echo $json_cert|jq -r '.data.certificate'>test.example.com.crt
-echo $json_cert|jq -r '.data.private_key'>test.example.com.key
-sudo cp test.example.com.crt /etc/nginx/ssl
-sudo cp test.example.com.key /etc/nginx/ssl
-sudo systemctl restart nginx
+vault write -format=json pki_int/issue/example-dot-com common_name="test2.example.com" ttl=720h > /home/user/test.example.com.crt
+cat /home/user/test2.example.com.crt | jq -r .data.certificate > /home/user/test2.example.com.crt.pem
+cat /home/user/test2.example.com.crt | jq -r .data.issuing_ca >> /home/user/test2.example.com.crt.pem
+cat /home/user/test2.example.com.crt | jq -r .data.private_key > /home/user/test2.example.com.crt.key
+cp /home/user/test2.example.com.crt.pem /etc/nginx/ssl/
+cp /home/user/test2.example.com.crt.key /etc/nginx/ssl/
+systemctl restart nginx
 ```
 Права на запуск файла и запуск файла:
 ```
-root@ubuntu-me:/home/user# chmod 755 cert_update.sh
-root@ubuntu-me:/home/user# ./cert_update.sh
-root@ubuntu-me:/home/user# systemctl status nginx
-● nginx.service - A high performance web server and a reverse proxy server
-     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
-     Active: active (running) since Mon 2022-04-11 07:22:16 MSK; 6s ago
-       Docs: man:nginx(8)
-    Process: 6226 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
-    Process: 6227 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
-   Main PID: 6228 (nginx)
-      Tasks: 5 (limit: 4627)
-     Memory: 4.5M
-     CGroup: /system.slice/nginx.service
-             ├─6228 nginx: master process /usr/sbin/nginx -g daemon on; master_process on;
-             ├─6229 nginx: worker process
-             ├─6230 nginx: worker process
-             ├─6231 nginx: worker process
-             └─6232 nginx: worker process
-
+/home/user# chmod 755 cert_update.sh
+/home/user# ./cert_update.sh
+/home/user# systemctl status nginx
+```
+![status](script.jpg)
+```
+/home/user# ls -lh
+итого 68K
+-rw-r--r-- 1 root root 6,0K апр 18 04:54  test2.example.com.crt
+-rw-r--r-- 1 root root 1,7K апр 18 04:54  test2.example.com.crt.key
+-rw-r--r-- 1 root root 2,6K апр 18 04:54  test2.example.com.crt.pem
 ```
 
 - Crontab работает (выберите число и время так, чтобы показать что crontab запускается и делает что надо)
 
 ```
-root@ubuntu-me:/home/user# crontab -e
+/home/user# crontab -e
 
 SHELL=/bin/bash
 VAULT_TOKEN=root
 VAULT_ADDR=http://127.0.0.1:8200
 
-28 20 11 * * /home/user/cert_update.sh
+05 05 18 * * /home/user/cert_update.sh
 
 ```
-![Сертификат](sert2.jpg)
+![Сертификат](sert_crontab.jpg)
 
 ```
-root@ubuntu-me:/etc/nginx# ls -lh
-итого 76K
-
--rw-r--r-- 1 root root   1,3K апр 11 20:11  test.example.com.crt
--rw-r--r-- 1 root root   1,7K апр 11 20:11  test.example.com.key
-
-```
-```
-root@ubuntu-me:/home/user# systemctl status nginx
-● nginx.service - A high performance web server and a reverse proxy server
-     Loaded: loaded (/lib/systemd/system/nginx.service; enabled; vendor preset: enabled)
-     Active: active (running) since Mon 2022-04-11 20:28:01 MSK; 1min 21s ago
-       Docs: man:nginx(8)
-    Process: 30615 ExecStartPre=/usr/sbin/nginx -t -q -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
-    Process: 30616 ExecStart=/usr/sbin/nginx -g daemon on; master_process on; (code=exited, status=0/SUCCESS)
-   Main PID: 30617 (nginx)
-      Tasks: 5 (limit: 4627)
-     Memory: 4.5M
-     CGroup: /system.slice/nginx.service
-             ├─30617 nginx: master process /usr/sbin/nginx -g daemon on; master_process on;
-             ├─30618 nginx: worker process
-             ├─30619 nginx: worker process
-             ├─30620 nginx: worker process
-             └─30621 nginx: worker process
-
-апр 11 20:28:01 ubuntu-me systemd[1]: Starting A high performance web server and a reverse proxy server...
-апр 11 20:28:01 ubuntu-me systemd[1]: Started A high performance web server and a reverse proxy server.
-
+root@user-VirtualBox:/home/user# ls -lh
+итого 68K
+-rw-r--r-- 1 root root 6,0K апр 18 05:05  test2.example.com.crt
+-rw-r--r-- 1 root root 1,7K апр 18 05:05  test2.example.com.crt.key
+-rw-r--r-- 1 root root 2,6K апр 18 05:05  test2.example.com.crt.pem
 ```
